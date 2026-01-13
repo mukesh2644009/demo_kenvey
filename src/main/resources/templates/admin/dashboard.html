@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - ShopEase</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css">
+    <link th:href="@{/css/admin.css}" rel="stylesheet">
+</head>
+<body class="admin-body">
+    <!-- Sidebar -->
+    <aside class="admin-sidebar">
+        <div class="sidebar-header">
+            <a th:href="@{/}" class="brand">
+                <i class="bi bi-bag-heart-fill"></i>
+                <span>ShopEase</span>
+            </a>
+        </div>
+        
+        <nav class="sidebar-nav">
+            <ul>
+                <li class="active">
+                    <a th:href="@{/admin}"><i class="bi bi-speedometer2"></i> Dashboard</a>
+                </li>
+                <li>
+                    <a th:href="@{/admin/products}"><i class="bi bi-box-seam"></i> Products</a>
+                </li>
+                <li>
+                    <a th:href="@{/admin/orders}"><i class="bi bi-receipt"></i> Orders</a>
+                </li>
+                <li>
+                    <a th:href="@{/admin/customers}"><i class="bi bi-people"></i> Customers</a>
+                </li>
+                <li>
+                    <a th:href="@{/admin/warranties}"><i class="bi bi-shield-check"></i> Warranties</a>
+                </li>
+                <li>
+                    <a th:href="@{/admin/discounts}"><i class="bi bi-percent"></i> Discounts</a>
+                </li>
+                <li>
+                    <a th:href="@{/admin/categories}"><i class="bi bi-folder"></i> Categories</a>
+                </li>
+            </ul>
+        </nav>
+        
+        <div class="sidebar-footer">
+            <a th:href="@{/}"><i class="bi bi-house"></i> Back to Store</a>
+            <a href="#" onclick="logout()"><i class="bi bi-box-arrow-right"></i> Logout</a>
+        </div>
+    </aside>
+    
+    <!-- Main Content -->
+    <main class="admin-main">
+        <header class="admin-header">
+            <div class="header-left">
+                <h1>Dashboard</h1>
+                <p>Welcome back! Here's what's happening with your store today.</p>
+            </div>
+            <div class="header-right">
+                <div class="header-date">
+                    <i class="bi bi-calendar3"></i>
+                    <span id="currentDate"></span>
+                </div>
+            </div>
+        </header>
+        
+        <div class="dashboard-content">
+            <!-- Stats Cards -->
+            <div class="row g-4 mb-4">
+                <div class="col-xl-3 col-md-6">
+                    <div class="stat-card">
+                        <div class="stat-icon orders">
+                            <i class="bi bi-receipt"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="todaysOrders">0</h3>
+                            <p>Today's Orders</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6">
+                    <div class="stat-card">
+                        <div class="stat-icon sales">
+                            <i class="bi bi-currency-dollar"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="todaysSales">$0</h3>
+                            <p>Today's Sales</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6">
+                    <div class="stat-card">
+                        <div class="stat-icon customers">
+                            <i class="bi bi-people"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="totalCustomers">0</h3>
+                            <p>Total Customers</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6">
+                    <div class="stat-card">
+                        <div class="stat-icon products">
+                            <i class="bi bi-box-seam"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="totalProducts">0</h3>
+                            <p>Active Products</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Quick Stats -->
+            <div class="row g-4 mb-4">
+                <div class="col-lg-8">
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h5>Order Statistics</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="order-stats-grid">
+                                <div class="order-stat pending">
+                                    <span class="count" id="pendingOrders">0</span>
+                                    <span class="label">Pending</span>
+                                </div>
+                                <div class="order-stat processing">
+                                    <span class="count" id="processingOrders">0</span>
+                                    <span class="label">Processing</span>
+                                </div>
+                                <div class="order-stat shipped">
+                                    <span class="count" id="shippedOrders">0</span>
+                                    <span class="label">Shipped</span>
+                                </div>
+                                <div class="order-stat delivered">
+                                    <span class="count" id="deliveredOrders">0</span>
+                                    <span class="label">Delivered</span>
+                                </div>
+                                <div class="order-stat cancelled">
+                                    <span class="count" id="cancelledOrders">0</span>
+                                    <span class="label">Cancelled</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h5>Inventory Alerts</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="alert-item warning">
+                                <i class="bi bi-exclamation-triangle"></i>
+                                <div>
+                                    <strong id="lowStockCount">0</strong> products low in stock
+                                </div>
+                            </div>
+                            <div class="alert-item danger">
+                                <i class="bi bi-x-circle"></i>
+                                <div>
+                                    <strong id="outOfStockCount">0</strong> products out of stock
+                                </div>
+                            </div>
+                            <div class="alert-item info">
+                                <i class="bi bi-clock"></i>
+                                <div>
+                                    <strong id="expiringWarranties">0</strong> warranties expiring soon
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Recent Orders & Top Customers -->
+            <div class="row g-4">
+                <div class="col-lg-8">
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h5>Recent Orders</h5>
+                            <a th:href="@{/admin/orders}" class="btn btn-sm btn-outline-accent">View All</a>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Order</th>
+                                            <th>Customer</th>
+                                            <th>Amount</th>
+                                            <th>Status</th>
+                                            <th>Date</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="recentOrdersTable">
+                                        <tr>
+                                            <td colspan="5" class="text-center">Loading...</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h5>Top Customers</h5>
+                        </div>
+                        <div class="card-body">
+                            <ul class="top-customers-list" id="topCustomersList">
+                                <li>Loading...</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Best Selling Products -->
+            <div class="row g-4 mt-2">
+                <div class="col-12">
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h5>Best Selling Products</h5>
+                            <a th:href="@{/admin/products}" class="btn btn-sm btn-outline-accent">View All</a>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3" id="bestSellingProducts">
+                                <div class="col-12 text-center">Loading...</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:src="@{/js/admin.js}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('currentDate').textContent = new Date().toLocaleDateString('en-US', {
+                weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+            });
+            
+            loadDashboard();
+        });
+        
+        async function loadDashboard() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = '/login';
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/admin/dashboard', {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    updateDashboard(data);
+                } else if (response.status === 403) {
+                    alert('Access denied. Admin privileges required.');
+                    window.location.href = '/';
+                }
+            } catch (error) {
+                console.error('Error loading dashboard:', error);
+            }
+        }
+        
+        function updateDashboard(data) {
+            // Update stat cards
+            document.getElementById('todaysOrders').textContent = data.todaysOrders || 0;
+            document.getElementById('todaysSales').textContent = '$' + (data.todaysSales || 0).toFixed(2);
+            document.getElementById('totalCustomers').textContent = data.totalCustomers || 0;
+            document.getElementById('totalProducts').textContent = data.activeProducts || 0;
+            
+            // Update order stats
+            document.getElementById('pendingOrders').textContent = data.pendingOrders || 0;
+            document.getElementById('processingOrders').textContent = data.processingOrders || 0;
+            document.getElementById('shippedOrders').textContent = data.shippedOrders || 0;
+            document.getElementById('deliveredOrders').textContent = data.deliveredOrders || 0;
+            document.getElementById('cancelledOrders').textContent = data.cancelledOrders || 0;
+            
+            // Update alerts
+            document.getElementById('lowStockCount').textContent = data.lowStockProducts || 0;
+            document.getElementById('outOfStockCount').textContent = data.outOfStockProducts || 0;
+            document.getElementById('expiringWarranties').textContent = data.expiringWarranties || 0;
+            
+            // Update recent orders table
+            if (data.recentOrders && data.recentOrders.length > 0) {
+                const tbody = document.getElementById('recentOrdersTable');
+                tbody.innerHTML = data.recentOrders.map(order => `
+                    <tr>
+                        <td><a href="/admin/orders?id=${order.id}">#${order.orderNumber}</a></td>
+                        <td>${order.userName}</td>
+                        <td>$${order.totalAmount.toFixed(2)}</td>
+                        <td><span class="badge badge-${order.status.toLowerCase()}">${order.status}</span></td>
+                        <td>${new Date(order.createdAt).toLocaleDateString()}</td>
+                    </tr>
+                `).join('');
+            }
+            
+            // Update top customers
+            if (data.topCustomers && data.topCustomers.length > 0) {
+                const list = document.getElementById('topCustomersList');
+                list.innerHTML = data.topCustomers.map((customer, index) => `
+                    <li>
+                        <div class="customer-rank">${index + 1}</div>
+                        <div class="customer-info">
+                            <strong>${customer.name}</strong>
+                            <span>${customer.totalOrders} orders · $${customer.lifetimeSpent.toFixed(2)}</span>
+                        </div>
+                    </li>
+                `).join('');
+            }
+            
+            // Update best selling products
+            if (data.bestSellingProducts && data.bestSellingProducts.length > 0) {
+                const container = document.getElementById('bestSellingProducts');
+                container.innerHTML = data.bestSellingProducts.map(product => `
+                    <div class="col-md-2 col-4">
+                        <div class="product-mini-card">
+                            <img src="${product.imageUrl || 'https://via.placeholder.com/100'}" alt="${product.name}">
+                            <h6>${product.name}</h6>
+                            <span>${product.soldCount} sold</span>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+    </script>
+</body>
+</html>
+

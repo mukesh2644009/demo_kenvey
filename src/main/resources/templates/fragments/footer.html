@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<footer th:fragment="footer" class="footer" id="contact">
+    <div class="container">
+        <div class="row gy-4">
+            <!-- Brand Info -->
+            <div class="col-lg-4">
+                <div class="footer-brand">
+                    <img th:src="@{/images/kenway-logo.svg}" alt="Kenway Industries" class="footer-logo mb-3" style="height: 60px;">
+                    <p>Kenway Industries - The Quality Product. Your trusted destination for premium kitchen appliances and household essentials.</p>
+                    <div class="social-links">
+                        <a href="https://wa.me/919876543210" target="_blank" title="WhatsApp" class="whatsapp-link">
+                            <i class="bi bi-whatsapp"></i>
+                        </a>
+                        <a href="https://instagram.com/kenvey-xyz" target="_blank" title="Instagram" class="instagram-link">
+                            <i class="bi bi-instagram"></i>
+                        </a>
+                        <a href="https://facebook.com/kenwayindustries" target="_blank" title="Facebook">
+                            <i class="bi bi-facebook"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Quick Links -->
+            <div class="col-lg-2 col-md-4">
+                <h5>Quick Links</h5>
+                <ul class="footer-links">
+                    <li><a th:href="@{/}">Home</a></li>
+                    <li><a th:href="@{/shop}">Products</a></li>
+                    <li><a href="#contact">Contact Us</a></li>
+                    <li><a href="#">About Us</a></li>
+                </ul>
+            </div>
+            
+            <!-- Categories -->
+            <div class="col-lg-2 col-md-4">
+                <h5>Categories</h5>
+                <ul class="footer-links">
+                    <li><a th:href="@{/shop}">Kitchen Appliances</a></li>
+                    <li><a th:href="@{/shop}">Coolers & Fans</a></li>
+                    <li><a th:href="@{/shop}">Chimneys</a></li>
+                    <li><a th:href="@{/shop}">Household Items</a></li>
+                </ul>
+            </div>
+            
+            <!-- Contact Information -->
+            <div class="col-lg-4 col-md-4">
+                <h5><i class="bi bi-geo-alt-fill me-2"></i>Contact Us</h5>
+                <div class="contact-info">
+                    <!-- WhatsApp -->
+                    <div class="contact-item">
+                        <a href="https://wa.me/919876543210" target="_blank" class="contact-link whatsapp">
+                            <i class="bi bi-whatsapp"></i>
+                            <div>
+                                <strong>WhatsApp</strong>
+                                <span>+91 98765 43210</span>
+                            </div>
+                        </a>
+                    </div>
+                    
+                    <!-- Phone -->
+                    <div class="contact-item">
+                        <a href="tel:+919876543210" class="contact-link phone">
+                            <i class="bi bi-telephone-fill"></i>
+                            <div>
+                                <strong>Phone</strong>
+                                <span>+91 98765 43210</span>
+                            </div>
+                        </a>
+                    </div>
+                    
+                    <!-- Instagram -->
+                    <div class="contact-item">
+                        <a href="https://instagram.com/kenvey-xyz" target="_blank" class="contact-link instagram">
+                            <i class="bi bi-instagram"></i>
+                            <div>
+                                <strong>Instagram</strong>
+                                <span>@kenvey-xyz</span>
+                            </div>
+                        </a>
+                    </div>
+                    
+                    <!-- Address -->
+                    <div class="contact-item">
+                        <div class="contact-link address">
+                            <i class="bi bi-geo-alt-fill"></i>
+                            <div>
+                                <strong>Address</strong>
+                                <span>Kenway Industries<br>Ajmer, Rajasthan<br>India</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <hr>
+        <div class="row">
+            <div class="col-12 text-center">
+                <p class="copyright">&copy; 2024 Kenway Industries. All rights reserved. | The Quality Product</p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<th:block th:fragment="scripts">
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Custom Scripts -->
+    <script th:src="@{/js/app.js}"></script>
+</th:block>
+</html>

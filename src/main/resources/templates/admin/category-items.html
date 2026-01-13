@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${category.name} + ' Items'">Category Items</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <link th:href="@{/css/admin.css}" rel="stylesheet">
+</head>
+<body>
+    <!-- Admin Navbar -->
+    <nav class="admin-navbar">
+        <div class="container-fluid">
+            <a class="navbar-brand" th:href="@{/admin}">
+                <img th:src="@{/images/kenway-logo.svg}" alt="Kenway" class="brand-logo">
+                <span>Admin Panel</span>
+            </a>
+            <div class="nav-right">
+                <a th:href="@{/admin/inventory-dashboard}" class="btn btn-outline-light btn-sm me-2">
+                    <i class="bi bi-graph-up me-1"></i>Dashboard
+                </a>
+                <a th:href="@{/admin/logout}" class="btn btn-danger btn-sm">
+                    <i class="bi bi-box-arrow-right me-1"></i>Logout
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="admin-container">
+        <!-- Sidebar -->
+        <aside class="admin-sidebar">
+            <div class="sidebar-header">
+                <h5><i class="bi bi-grid me-2"></i>Categories</h5>
+            </div>
+            <ul class="category-list">
+                <li th:each="cat : ${categories}">
+                    <a th:href="@{/admin/category/{id}(id=${cat.id})}" class="category-link"
+                       th:classappend="${cat.id == category.id} ? 'active' : ''">
+                        <i th:class="${cat.icon} ?: 'bi bi-box'"></i>
+                        <span th:text="${cat.name}">Category</span>
+                    </a>
+                </li>
+            </ul>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="admin-main">
+            <nav aria-label="breadcrumb" class="mb-3">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a th:href="@{/admin}">Admin</a></li>
+                    <li class="breadcrumb-item active" th:text="${category.name}">Category</li>
+                </ol>
+            </nav>
+
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div class="page-header mb-0">
+                    <h1>
+                        <i th:class="${category.icon} + ' me-2'" th:if="${category.icon}"></i>
+                        <span th:text="${category.name}">Category Name</span>
+                    </h1>
+                    <p th:text="${category.description} ?: 'Items in this category'">Description</p>
+                </div>
+                <a th:href="@{/admin/items/add(category=${category.id})}" class="btn btn-primary">
+                    <i class="bi bi-plus-circle me-1"></i>Add Item
+                </a>
+            </div>
+
+            <!-- Items Grid -->
+            <div class="row g-4" th:if="${!#lists.isEmpty(items)}">
+                <div class="col-md-6 col-lg-4" th:each="item : ${items}">
+                    <div class="form-card h-100">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <code th:text="${item.itemId}">CLR-0001</code>
+                            <div class="text-end" th:if="${item.hasAnyWarranty()}">
+                                <small th:if="${item.hasProductWarranty}" class="d-block">
+                                    P: <span th:if="${item.isProductWarrantyValid()}" class="text-success fw-bold" 
+                                             th:text="${item.productWarrantyDaysRemaining()} + 'd'">0d</span>
+                                    <span th:unless="${item.isProductWarrantyValid()}" class="text-danger">Exp</span>
+                                </small>
+                                <small th:if="${item.hasMotorWarranty}" class="d-block">
+                                    M: <span th:if="${item.isMotorWarrantyValid()}" class="text-success fw-bold" 
+                                             th:text="${item.motorWarrantyDaysRemaining()} + 'd'">0d</span>
+                                    <span th:unless="${item.isMotorWarrantyValid()}" class="text-danger">Exp</span>
+                                </small>
+                            </div>
+                        </div>
+                        <h6 th:text="${item.name}">Item Name</h6>
+                        <p class="text-muted small mb-2" th:text="${item.customerName} ?: 'No customer assigned'">Customer</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <small class="text-muted" th:text="${#temporals.format(item.dateOfPurchase, 'dd MMM yyyy')}">Date</small>
+                            <a th:href="@{/admin/items/{id}(id=${item.id})}" class="btn btn-sm btn-outline-primary">
+                                View <i class="bi bi-arrow-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Empty State -->
+            <div class="text-center py-5" th:if="${#lists.isEmpty(items)}">
+                <i th:class="${category.icon} ?: 'bi bi-box'" style="font-size: 3rem; color: #cbd5e1;"></i>
+                <h5 class="mt-3">No items in this category</h5>
+                <p class="text-muted">Add your first item to this category</p>
+                <a th:href="@{/admin/items/add(category=${category.id})}" class="btn btn-primary">
+                    <i class="bi bi-plus-circle me-1"></i>Add Item
+                </a>
+            </div>
+        </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+

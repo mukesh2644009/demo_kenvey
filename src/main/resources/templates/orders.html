@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/header :: head}"></head>
+<body>
+    <nav th:replace="~{fragments/header :: navbar}"></nav>
+    
+    <!-- Page Header -->
+    <section class="page-header">
+        <div class="container">
+            <h1>My Orders</h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a th:href="@{/}">Home</a></li>
+                    <li class="breadcrumb-item active">Orders</li>
+                </ol>
+            </nav>
+        </div>
+    </section>
+    
+    <!-- Orders Content -->
+    <section class="orders-section py-5">
+        <div class="container">
+            <div class="orders-list" id="ordersList">
+                <div class="text-center py-5">
+                    <div class="spinner-border text-accent" role="status"></div>
+                    <p class="mt-2">Loading orders...</p>
+                </div>
+            </div>
+            
+            <div id="noOrders" style="display: none;" class="text-center py-5">
+                <i class="bi bi-box-seam" style="font-size: 4rem; color: #94a3b8;"></i>
+                <h3 class="mt-3">No Orders Yet</h3>
+                <p class="text-muted">You haven't placed any orders yet.</p>
+                <a th:href="@{/shop}" class="btn btn-accent">Start Shopping</a>
+            </div>
+        </div>
+    </section>
+    
+    <footer th:replace="~{fragments/footer :: footer}"></footer>
+    <th:block th:replace="~{fragments/footer :: scripts}"></th:block>
+    
+    <style>
+        .order-card {
+            background: #fff;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            overflow: hidden;
+        }
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.25rem 1.5rem;
+            background: #f8fafc;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .order-header-left h5 { margin: 0 0 0.25rem; font-size: 1rem; }
+        .order-header-left p { margin: 0; color: #64748b; font-size: 0.875rem; }
+        .order-status {
+            padding: 0.35rem 1rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        .status-pending { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
+        .status-confirmed, .status-processing { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
+        .status-shipped { background: rgba(99, 102, 241, 0.1); color: #6366f1; }
+        .status-delivered { background: rgba(16, 185, 129, 0.1); color: #10b981; }
+        .status-cancelled { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+        .order-body { padding: 1.5rem; }
+        .order-items { margin-bottom: 1rem; }
+        .order-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .order-item:last-child { border-bottom: none; }
+        .order-item img {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+        .order-item-info { flex: 1; }
+        .order-item-info h6 { margin: 0 0 0.25rem; font-size: 0.95rem; }
+        .order-item-info p { margin: 0; color: #64748b; font-size: 0.85rem; }
+        .order-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 1rem;
+            border-top: 1px solid #f1f5f9;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .order-total { font-size: 1.25rem; font-weight: 700; }
+        .order-total span { color: #e94560; }
+    </style>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', loadOrders);
+        
+        async function loadOrders() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = '/login';
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/orders?size=20', {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.content && data.content.length > 0) {
+                        renderOrders(data.content);
+                    } else {
+                        document.getElementById('ordersList').style.display = 'none';
+                        document.getElementById('noOrders').style.display = 'block';
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading orders:', error);
+            }
+        }
+        
+        function renderOrders(orders) {
+            const container = document.getElementById('ordersList');
+            
+            container.innerHTML = orders.map(order => `
+                <div class="order-card">
+                    <div class="order-header">
+                        <div class="order-header-left">
+                            <h5>Order #${order.orderNumber}</h5>
+                            <p>Placed on ${new Date(order.createdAt).toLocaleDateString('en-US', { 
+                                year: 'numeric', month: 'long', day: 'numeric' 
+                            })}</p>
+                        </div>
+                        <span class="order-status status-${order.status.toLowerCase()}">${order.status}</span>
+                    </div>
+                    <div class="order-body">
+                        <div class="order-items">
+                            ${order.items.slice(0, 3).map(item => `
+                                <div class="order-item">
+                                    <img src="${item.productImage || 'https://via.placeholder.com/60'}" alt="${item.productName}">
+                                    <div class="order-item-info">
+                                        <h6>${item.productName}</h6>
+                                        <p>Qty: ${item.quantity} × $${item.unitPrice.toFixed(2)}</p>
+                                    </div>
+                                    <div class="item-price">$${item.totalPrice.toFixed(2)}</div>
+                                </div>
+                            `).join('')}
+                            ${order.items.length > 3 ? `<p class="text-muted mt-2">+${order.items.length - 3} more items</p>` : ''}
+                        </div>
+                        <div class="order-footer">
+                            <div class="order-total">
+                                Total: <span>$${order.totalAmount.toFixed(2)}</span>
+                            </div>
+                            <div>
+                                <a href="/order/${order.orderNumber}" class="btn btn-outline-accent btn-sm">View Details</a>
+                                ${order.trackingNumber ? `<a href="/track-order?order=${order.orderNumber}" class="btn btn-accent btn-sm ms-2">Track Order</a>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+    </script>
+</body>
+</html>
+

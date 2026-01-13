@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/header :: head}"></head>
+<body>
+    <nav th:replace="~{fragments/header :: navbar}"></nav>
+    
+    <!-- Page Header -->
+    <section class="page-header">
+        <div class="container">
+            <h1>Checkout</h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a th:href="@{/}">Home</a></li>
+                    <li class="breadcrumb-item"><a th:href="@{/cart}">Cart</a></li>
+                    <li class="breadcrumb-item active">Checkout</li>
+                </ol>
+            </nav>
+        </div>
+    </section>
+    
+    <!-- Checkout Content -->
+    <section class="checkout-section">
+        <div class="container">
+            <div class="row g-5">
+                <div class="col-lg-7">
+                    <div class="checkout-form-card">
+                        <h4>Shipping Information</h4>
+                        <form id="checkoutForm">
+                            <div class="row g-3">
+                                <div class="col-12">
+                                    <label class="form-label">Full Name *</label>
+                                    <input type="text" class="form-control" id="shippingName" required>
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label">Phone Number *</label>
+                                    <input type="tel" class="form-control" id="shippingPhone" required>
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label">Address *</label>
+                                    <input type="text" class="form-control" id="shippingAddress" placeholder="Street address" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">City *</label>
+                                    <input type="text" class="form-control" id="shippingCity" required>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">State *</label>
+                                    <input type="text" class="form-control" id="shippingState" required>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Zip Code *</label>
+                                    <input type="text" class="form-control" id="shippingZipCode" required>
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label">Country *</label>
+                                    <select class="form-select" id="shippingCountry" required>
+                                        <option value="USA" selected>United States</option>
+                                        <option value="CAN">Canada</option>
+                                        <option value="UK">United Kingdom</option>
+                                        <option value="AUS">Australia</option>
+                                    </select>
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label">Order Notes (Optional)</label>
+                                    <textarea class="form-control" id="notes" rows="3" placeholder="Special instructions for delivery"></textarea>
+                                </div>
+                            </div>
+                            
+                            <hr class="my-4">
+                            
+                            <h4>Payment Method</h4>
+                            <div class="payment-methods">
+                                <div class="form-check payment-option">
+                                    <input class="form-check-input" type="radio" name="paymentMethod" id="payCard" value="CARD" checked>
+                                    <label class="form-check-label" for="payCard">
+                                        <i class="bi bi-credit-card"></i> Credit/Debit Card
+                                    </label>
+                                </div>
+                                <div class="form-check payment-option">
+                                    <input class="form-check-input" type="radio" name="paymentMethod" id="payPaypal" value="PAYPAL">
+                                    <label class="form-check-label" for="payPaypal">
+                                        <i class="bi bi-paypal"></i> PayPal
+                                    </label>
+                                </div>
+                                <div class="form-check payment-option">
+                                    <input class="form-check-input" type="radio" name="paymentMethod" id="payCod" value="COD">
+                                    <label class="form-check-label" for="payCod">
+                                        <i class="bi bi-cash"></i> Cash on Delivery
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div class="alert alert-danger mt-3" id="errorAlert" style="display: none;"></div>
+                        </form>
+                    </div>
+                </div>
+                
+                <div class="col-lg-5">
+                    <div class="order-summary-card">
+                        <h4>Order Summary</h4>
+                        <div class="order-items" id="orderItems">
+                            <div class="text-center py-3">Loading...</div>
+                        </div>
+                        <hr>
+                        <div class="summary-row">
+                            <span>Subtotal</span>
+                            <span id="checkoutSubtotal">$0.00</span>
+                        </div>
+                        <div class="summary-row">
+                            <span>Shipping</span>
+                            <span id="checkoutShipping">$0.00</span>
+                        </div>
+                        <div class="discount-form mt-3">
+                            <div class="input-group">
+                                <input type="text" class="form-control" placeholder="Discount code" id="discountCodeCheckout">
+                                <button class="btn btn-outline-accent" type="button" onclick="applyDiscountCheckout()">Apply</button>
+                            </div>
+                            <div id="discountMessageCheckout" class="mt-2"></div>
+                        </div>
+                        <div class="summary-row discount-row" id="discountRowCheckout" style="display: none;">
+                            <span>Discount</span>
+                            <span id="checkoutDiscount">-$0.00</span>
+                        </div>
+                        <hr>
+                        <div class="summary-row total">
+                            <span>Total</span>
+                            <span id="checkoutTotal">$0.00</span>
+                        </div>
+                        <button type="button" class="btn btn-accent btn-lg w-100 mt-4" onclick="placeOrder()">
+                            <i class="bi bi-lock me-2"></i>Place Order
+                        </button>
+                        <p class="text-center text-muted mt-3">
+                            <i class="bi bi-shield-check me-1"></i>
+                            Your payment information is secure
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Order Success Modal -->
+    <div class="modal fade" id="successModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-body text-center py-5">
+                    <div class="success-icon mb-4">
+                        <i class="bi bi-check-circle-fill text-success" style="font-size: 4rem;"></i>
+                    </div>
+                    <h3>Order Placed Successfully!</h3>
+                    <p class="text-muted">Thank you for your purchase. Your order number is:</p>
+                    <h4 class="text-accent" id="orderNumber"></h4>
+                    <p class="text-muted">We've sent a confirmation email with your order details.</p>
+                    <div class="mt-4">
+                        <a th:href="@{/orders}" class="btn btn-accent">View My Orders</a>
+                        <a th:href="@{/shop}" class="btn btn-outline-secondary ms-2">Continue Shopping</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <footer th:replace="~{fragments/footer :: footer}"></footer>
+    <th:block th:replace="~{fragments/footer :: scripts}"></th:block>
+    
+    <style>
+        .checkout-section { padding: 3rem 0; }
+        .checkout-form-card, .order-summary-card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        .checkout-form-card h4, .order-summary-card h4 {
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #f1f5f9;
+        }
+        .payment-option {
+            padding: 1rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            cursor: pointer;
+        }
+        .payment-option:hover { border-color: #e94560; }
+        .payment-option .form-check-input:checked ~ .form-check-label {
+            color: #e94560;
+        }
+        .payment-option i { font-size: 1.25rem; margin-right: 0.5rem; }
+        .order-item {
+            display: flex;
+            gap: 1rem;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .order-item:last-child { border-bottom: none; }
+        .order-item img {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+        .order-item-info { flex: 1; }
+        .order-item-info h6 { margin: 0 0 0.25rem; font-size: 0.95rem; }
+        .order-item-info p { margin: 0; font-size: 0.85rem; color: #64748b; }
+        .order-item-price { font-weight: 600; }
+        .summary-row { display: flex; justify-content: space-between; margin-bottom: 0.75rem; }
+        .summary-row.total { font-size: 1.25rem; font-weight: 700; }
+        .summary-row.total span:last-child { color: #e94560; }
+        .text-accent { color: #e94560; }
+    </style>
+    
+    <script>
+        let cartItems = [];
+        let subtotal = 0;
+        let discountAmount = 0;
+        let appliedDiscountCode = '';
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            loadCheckoutCart();
+            
+            // Pre-fill from user data
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            if (user.name) document.getElementById('shippingName').value = user.name;
+            if (user.phone) document.getElementById('shippingPhone').value = user.phone;
+            if (user.address) document.getElementById('shippingAddress').value = user.address;
+            if (user.city) document.getElementById('shippingCity').value = user.city;
+            if (user.state) document.getElementById('shippingState').value = user.state;
+            if (user.zipCode) document.getElementById('shippingZipCode').value = user.zipCode;
+            
+            // Check for saved discount code
+            const savedCode = localStorage.getItem('discountCode');
+            if (savedCode) {
+                document.getElementById('discountCodeCheckout').value = savedCode;
+            }
+        });
+        
+        async function loadCheckoutCart() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = '/login';
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/cart', {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                
+                if (response.ok) {
+                    cartItems = await response.json();
+                    if (cartItems.length === 0) {
+                        window.location.href = '/cart';
+                        return;
+                    }
+                    renderOrderItems();
+                }
+            } catch (error) {
+                console.error('Error loading cart:', error);
+            }
+        }
+        
+        function renderOrderItems() {
+            const container = document.getElementById('orderItems');
+            subtotal = 0;
+            
+            let html = '';
+            cartItems.forEach(item => {
+                subtotal += item.totalPrice;
+                html += `
+                    <div class="order-item">
+                        <img src="${item.productImage || 'https://via.placeholder.com/60'}" alt="${item.productName}">
+                        <div class="order-item-info">
+                            <h6>${item.productName}</h6>
+                            <p>Qty: ${item.quantity}</p>
+                        </div>
+                        <div class="order-item-price">$${item.totalPrice.toFixed(2)}</div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+            updateTotals();
+        }
+        
+        function updateTotals() {
+            const shipping = subtotal >= 100 ? 0 : 9.99;
+            const total = subtotal - discountAmount + shipping;
+            
+            document.getElementById('checkoutSubtotal').textContent = '$' + subtotal.toFixed(2);
+            document.getElementById('checkoutShipping').textContent = shipping === 0 ? 'Free' : '$' + shipping.toFixed(2);
+            document.getElementById('checkoutTotal').textContent = '$' + total.toFixed(2);
+        }
+        
+        async function applyDiscountCheckout() {
+            const code = document.getElementById('discountCodeCheckout').value;
+            if (!code) return;
+            
+            try {
+                const response = await fetch(`/api/discounts/validate/${code}?orderTotal=${subtotal}`);
+                const result = await response.json();
+                
+                const msgElement = document.getElementById('discountMessageCheckout');
+                
+                if (result.valid) {
+                    msgElement.innerHTML = `<span class="text-success"><i class="bi bi-check-circle"></i> ${result.discount.name} applied!</span>`;
+                    document.getElementById('discountRowCheckout').style.display = 'flex';
+                    document.getElementById('checkoutDiscount').textContent = '-$' + result.discountAmount.toFixed(2);
+                    discountAmount = result.discountAmount;
+                    appliedDiscountCode = code;
+                    updateTotals();
+                } else {
+                    msgElement.innerHTML = `<span class="text-danger"><i class="bi bi-x-circle"></i> ${result.message}</span>`;
+                    discountAmount = 0;
+                    appliedDiscountCode = '';
+                }
+            } catch (error) {
+                console.error('Error applying discount:', error);
+            }
+        }
+        
+        async function placeOrder() {
+            const form = document.getElementById('checkoutForm');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+            
+            const orderData = {
+                shippingName: document.getElementById('shippingName').value,
+                shippingPhone: document.getElementById('shippingPhone').value,
+                shippingAddress: document.getElementById('shippingAddress').value,
+                shippingCity: document.getElementById('shippingCity').value,
+                shippingState: document.getElementById('shippingState').value,
+                shippingZipCode: document.getElementById('shippingZipCode').value,
+                shippingCountry: document.getElementById('shippingCountry').value,
+                paymentMethod: document.querySelector('input[name="paymentMethod"]:checked').value,
+                discountCode: appliedDiscountCode,
+                notes: document.getElementById('notes').value
+            };
+            
+            const token = localStorage.getItem('token');
+            
+            try {
+                const response = await fetch('/api/orders/checkout', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + token
+                    },
+                    body: JSON.stringify(orderData)
+                });
+                
+                if (response.ok) {
+                    const order = await response.json();
+                    document.getElementById('orderNumber').textContent = order.orderNumber;
+                    localStorage.removeItem('discountCode');
+                    new bootstrap.Modal(document.getElementById('successModal')).show();
+                } else {
+                    const error = await response.json();
+                    document.getElementById('errorAlert').style.display = 'block';
+                    document.getElementById('errorAlert').textContent = error.message || 'Failed to place order';
+                }
+            } catch (error) {
+                document.getElementById('errorAlert').style.display = 'block';
+                document.getElementById('errorAlert').textContent = 'An error occurred. Please try again.';
+            }
+        }
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/header :: head}"></head>
+<body>
+    <nav th:replace="~{fragments/header :: navbar}"></nav>
+    
+    <!-- Breadcrumb -->
+    <section class="breadcrumb-section">
+        <div class="container">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a th:href="@{/}">Home</a></li>
+                    <li class="breadcrumb-item"><a th:href="@{/shop}">Shop</a></li>
+                    <li class="breadcrumb-item active" th:text="${product.name}">Product</li>
+                </ol>
+            </nav>
+        </div>
+    </section>
+    
+    <!-- Product Detail -->
+    <section class="product-detail-section">
+        <div class="container">
+            <div class="row g-5">
+                <!-- Product Images -->
+                <div class="col-lg-6">
+                    <div class="product-gallery">
+                        <div class="main-image">
+                            <img th:src="${product.imageUrl} ?: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800'" 
+                                 th:alt="${product.name}" id="mainImage">
+                            <div class="image-badges">
+                                <span class="badge badge-featured" th:if="${product.featured}">Featured</span>
+                                <span class="badge badge-sale" th:if="${product.originalPrice != null and product.originalPrice > product.price}">Sale</span>
+                            </div>
+                        </div>
+                        <div class="thumbnail-images" th:if="${product.additionalImages != null and !product.additionalImages.isEmpty()}">
+                            <img th:src="${product.imageUrl}" onclick="changeImage(this.src)" class="active">
+                            <img th:each="img : ${product.additionalImages}" th:src="${img}" onclick="changeImage(this.src)">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Product Info -->
+                <div class="col-lg-6">
+                    <div class="product-detail-info">
+                        <span class="product-brand" th:text="${product.brand}">Brand</span>
+                        <h1 class="product-title" th:text="${product.name}">Product Name</h1>
+                        
+                        <div class="product-meta">
+                            <div class="product-rating">
+                                <div class="stars">
+                                    <i class="bi bi-star-fill"></i>
+                                    <i class="bi bi-star-fill"></i>
+                                    <i class="bi bi-star-fill"></i>
+                                    <i class="bi bi-star-fill"></i>
+                                    <i class="bi bi-star-half"></i>
+                                </div>
+                                <span th:text="${#numbers.formatDecimal(product.rating, 1, 1)} + ' (' + ${product.reviewCount} + ' reviews)'">4.5 (100 reviews)</span>
+                            </div>
+                            <span class="product-sku">SKU: <span th:text="${product.sku}">SKU123</span></span>
+                        </div>
+                        
+                        <div class="product-price-detail">
+                            <span class="current-price" th:text="'$' + ${#numbers.formatDecimal(product.price, 1, 2)}">$99.99</span>
+                            <span class="original-price" th:if="${product.originalPrice != null and product.originalPrice > product.price}" 
+                                  th:text="'$' + ${#numbers.formatDecimal(product.originalPrice, 1, 2)}">$129.99</span>
+                            <span class="discount-percent" th:if="${product.originalPrice != null and product.originalPrice > product.price}"
+                                  th:text="'-' + ${#numbers.formatDecimal((product.originalPrice - product.price) / product.originalPrice * 100, 0, 0)} + '%'">-25%</span>
+                        </div>
+                        
+                        <p class="product-description" th:text="${product.description}">Product description goes here...</p>
+                        
+                        <div class="product-options">
+                            <div class="option-group" th:if="${product.color != null}">
+                                <label>Color:</label>
+                                <span class="color-display" th:style="'background-color:' + ${product.color}" th:title="${product.color}"></span>
+                                <span th:text="${product.color}">Black</span>
+                            </div>
+                            
+                            <div class="option-group" th:if="${product.size != null}">
+                                <label>Size:</label>
+                                <span th:text="${product.size}">M</span>
+                            </div>
+                        </div>
+                        
+                        <div class="stock-status" th:classappend="${product.stockQuantity > 0} ? 'in-stock' : 'out-of-stock'">
+                            <i th:class="${product.stockQuantity > 0} ? 'bi bi-check-circle-fill' : 'bi bi-x-circle-fill'"></i>
+                            <span th:if="${product.stockQuantity > 0}" th:text="'In Stock (' + ${product.stockQuantity} + ' available)'">In Stock</span>
+                            <span th:unless="${product.stockQuantity > 0}">Out of Stock</span>
+                        </div>
+                        
+                        <div class="product-actions-detail" th:if="${product.stockQuantity > 0}">
+                            <div class="quantity-selector">
+                                <button type="button" onclick="decrementQty()"><i class="bi bi-dash"></i></button>
+                                <input type="number" id="quantity" value="1" min="1" th:max="${product.stockQuantity}">
+                                <button type="button" onclick="incrementQty()"><i class="bi bi-plus"></i></button>
+                            </div>
+                            <button class="btn btn-accent btn-lg flex-grow-1" th:onclick="|addToCartWithQty(${product.id})|">
+                                <i class="bi bi-cart-plus me-2"></i>Add to Cart
+                            </button>
+                        </div>
+                        
+                        <div class="product-features">
+                            <div class="feature">
+                                <i class="bi bi-shield-check"></i>
+                                <div>
+                                    <strong th:text="${product.warrantyPeriodMonths} + ' Months Warranty'">12 Months Warranty</strong>
+                                    <span>Full coverage on manufacturing defects</span>
+                                </div>
+                            </div>
+                            <div class="feature">
+                                <i class="bi bi-truck"></i>
+                                <div>
+                                    <strong>Free Shipping</strong>
+                                    <span>On orders over $100</span>
+                                </div>
+                            </div>
+                            <div class="feature">
+                                <i class="bi bi-arrow-repeat"></i>
+                                <div>
+                                    <strong>Easy Returns</strong>
+                                    <span>30-day return policy</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Related Products -->
+    <section class="related-products-section" th:if="${relatedProducts != null and !relatedProducts.isEmpty()}">
+        <div class="container">
+            <div class="section-header text-center">
+                <span class="section-subtitle">You May Also Like</span>
+                <h2 class="section-title">Related Products</h2>
+            </div>
+            <div class="row g-4">
+                <div class="col-lg-3 col-md-4 col-6" th:each="prod : ${relatedProducts}">
+                    <div class="product-card">
+                        <div class="product-image">
+                            <img th:src="${prod.imageUrl} ?: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400'" 
+                                 th:alt="${prod.name}">
+                            <div class="product-actions">
+                                <button class="btn-action" th:onclick="|addToCart(${prod.id})|">
+                                    <i class="bi bi-cart-plus"></i>
+                                </button>
+                                <a th:href="@{/product/{id}(id=${prod.id})}" class="btn-action">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="product-info">
+                            <span class="product-brand" th:text="${prod.brand}">Brand</span>
+                            <h5 class="product-name">
+                                <a th:href="@{/product/{id}(id=${prod.id})}" th:text="${prod.name}">Product Name</a>
+                            </h5>
+                            <div class="product-price">
+                                <span class="current-price" th:text="'$' + ${#numbers.formatDecimal(prod.price, 1, 2)}">$99.99</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <footer th:replace="~{fragments/footer :: footer}"></footer>
+    <th:block th:replace="~{fragments/footer :: scripts}"></th:block>
+    
+    <script th:inline="javascript">
+        const maxQty = [[${product.stockQuantity}]];
+        
+        function changeImage(src) {
+            document.getElementById('mainImage').src = src;
+            document.querySelectorAll('.thumbnail-images img').forEach(img => img.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+        
+        function incrementQty() {
+            const input = document.getElementById('quantity');
+            if (parseInt(input.value) < maxQty) {
+                input.value = parseInt(input.value) + 1;
+            }
+        }
+        
+        function decrementQty() {
+            const input = document.getElementById('quantity');
+            if (parseInt(input.value) > 1) {
+                input.value = parseInt(input.value) - 1;
+            }
+        }
+        
+        function addToCartWithQty(productId) {
+            const qty = parseInt(document.getElementById('quantity').value);
+            addToCart(productId, qty);
+        }
+    </script>
+</body>
+</html>
+

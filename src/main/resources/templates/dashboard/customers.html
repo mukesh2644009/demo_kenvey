@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Search - Kenway Industries</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <link th:href="@{/css/dashboard.css}" href="/css/dashboard.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Sidebar -->
+    <nav class="sidebar">
+        <div class="sidebar-header">
+            <img th:src="@{/images/kenway-logo.svg}" alt="Kenway Logo" class="sidebar-logo">
+            <span class="sidebar-brand">Kenway Industries</span>
+        </div>
+        <ul class="sidebar-nav">
+            <li class="nav-item">
+                <a href="/dashboard" class="nav-link">
+                    <i class="bi bi-speedometer2"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+            <li class="nav-item active">
+                <a href="/dashboard/customers" class="nav-link">
+                    <i class="bi bi-people"></i>
+                    <span>Customers</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/admin/orders" class="nav-link">
+                    <i class="bi bi-box"></i>
+                    <span>Orders</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/admin/warranties" class="nav-link">
+                    <i class="bi bi-shield-check"></i>
+                    <span>Warranties</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/admin/products" class="nav-link">
+                    <i class="bi bi-grid"></i>
+                    <span>Products</span>
+                </a>
+            </li>
+        </ul>
+        <div class="sidebar-footer">
+            <a href="/" class="nav-link">
+                <i class="bi bi-house"></i>
+                <span>Back to Store</span>
+            </a>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="page-header">
+            <h1><i class="bi bi-people me-2"></i>Customer Search</h1>
+        </div>
+
+        <!-- Search Box -->
+        <div class="search-section">
+            <form method="get" action="/dashboard/customers" class="search-form">
+                <div class="input-group input-group-lg">
+                    <span class="input-group-text bg-white border-end-0">
+                        <i class="bi bi-search"></i>
+                    </span>
+                    <input type="text" 
+                           class="form-control border-start-0" 
+                           name="search" 
+                           th:value="${search}"
+                           placeholder="Search by customer ID, name, or email..."
+                           autofocus>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-search me-1"></i> Search
+                    </button>
+                </div>
+                <div class="search-hints mt-2">
+                    <small class="text-muted">
+                        <i class="bi bi-lightbulb"></i> 
+                        Enter customer number (e.g., CUST-000001), name, or email address
+                    </small>
+                </div>
+            </form>
+        </div>
+
+        <!-- Search Results -->
+        <div class="results-section" th:if="${customers != null}">
+            <div class="results-header">
+                <h5>
+                    <span th:text="${#lists.size(customers)}">0</span> 
+                    <span th:text="${#lists.size(customers) == 1} ? 'result' : 'results'">results</span> 
+                    found for "<span th:text="${search}">search term</span>"
+                </h5>
+            </div>
+
+            <div class="customer-grid" th:if="${!#lists.isEmpty(customers)}">
+                <div class="customer-card" th:each="customer : ${customers}">
+                    <div class="customer-avatar">
+                        <span th:text="${#strings.substring(customer.name, 0, 1)}">J</span>
+                    </div>
+                    <div class="customer-details">
+                        <h6 th:text="${customer.name}">Customer Name</h6>
+                        <p class="customer-id" th:text="${customer.customerNumber}">CUST-000001</p>
+                        <p class="customer-email">
+                            <i class="bi bi-envelope"></i>
+                            <span th:text="${customer.email}">email@example.com</span>
+                        </p>
+                        <p class="customer-phone" th:if="${customer.phone}">
+                            <i class="bi bi-telephone"></i>
+                            <span th:text="${customer.phone}">+91 9876543210</span>
+                        </p>
+                    </div>
+                    <div class="customer-summary">
+                        <div class="summary-item">
+                            <span class="label">Orders</span>
+                            <span class="value" th:text="${customer.totalOrders != null} ? ${customer.totalOrders} : '0'">0</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="label">Total Spent</span>
+                            <span class="value" th:text="${customer.totalSpent != null} ? '₹' + ${#numbers.formatDecimal(customer.totalSpent, 1, 0)} : '₹0'">₹0</span>
+                        </div>
+                    </div>
+                    <div class="customer-actions">
+                        <a th:href="@{'/dashboard/customers/' + ${customer.customerId}}" class="btn btn-primary">
+                            <i class="bi bi-eye me-1"></i> View Details
+                        </a>
+                        <a th:href="@{'/dashboard/customers/' + ${customer.customerId} + '/export/csv'}" class="btn btn-outline-secondary">
+                            <i class="bi bi-download me-1"></i> Export
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="no-results" th:if="${#lists.isEmpty(customers)}">
+                <div class="no-results-icon">
+                    <i class="bi bi-search"></i>
+                </div>
+                <h5>No customers found</h5>
+                <p class="text-muted">Try searching with a different term or check the spelling</p>
+            </div>
+        </div>
+
+        <!-- Initial State -->
+        <div class="initial-state" th:if="${customers == null}">
+            <div class="initial-icon">
+                <i class="bi bi-person-badge"></i>
+            </div>
+            <h4>Search for Customers</h4>
+            <p class="text-muted">Use the search box above to find customers by their ID, name, or email</p>
+            <div class="quick-actions mt-4">
+                <h6>Quick Actions</h6>
+                <div class="d-flex gap-2 justify-content-center">
+                    <a href="/dashboard" class="btn btn-outline-primary">
+                        <i class="bi bi-speedometer2 me-1"></i> View Dashboard
+                    </a>
+                    <a href="/admin/orders" class="btn btn-outline-primary">
+                        <i class="bi bi-box me-1"></i> View Orders
+                    </a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Auto-focus search input
+        document.querySelector('input[name="search"]').focus();
+    </script>
+</body>
+</html>
+

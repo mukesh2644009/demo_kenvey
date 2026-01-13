@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/header :: head}"></head>
+<body class="auth-page">
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <a th:href="@{/}" class="auth-logo">
+                    <i class="bi bi-bag-heart-fill"></i>
+                    <span>ShopEase</span>
+                </a>
+                <h2>Create Account</h2>
+                <p>Join us and start shopping</p>
+            </div>
+            
+            <form id="registerForm" class="auth-form">
+                <div class="mb-3">
+                    <label for="name" class="form-label">Full Name</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-person"></i></span>
+                        <input type="text" class="form-control" id="name" name="name" placeholder="John Doe" required>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="email" class="form-label">Email</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                        <input type="email" class="form-control" id="email" name="email" placeholder="your@email.com" required>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="phone" class="form-label">Phone (Optional)</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-phone"></i></span>
+                        <input type="tel" class="form-control" id="phone" name="phone" placeholder="+1 234 567 8900">
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="password" class="form-label">Password</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                        <input type="password" class="form-control" id="password" name="password" placeholder="••••••••" required minlength="6">
+                    </div>
+                    <div class="form-text">At least 6 characters</div>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="confirmPassword" class="form-label">Confirm Password</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-lock-fill"></i></span>
+                        <input type="password" class="form-control" id="confirmPassword" placeholder="••••••••" required>
+                    </div>
+                </div>
+                
+                <div class="form-check mb-4">
+                    <input class="form-check-input" type="checkbox" id="terms" required>
+                    <label class="form-check-label" for="terms">
+                        I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>
+                    </label>
+                </div>
+                
+                <div class="alert alert-danger" id="errorAlert" style="display: none;"></div>
+                
+                <button type="submit" class="btn btn-accent btn-lg w-100">
+                    Create Account <i class="bi bi-arrow-right ms-2"></i>
+                </button>
+            </form>
+            
+            <div class="auth-divider">
+                <span>or continue with</span>
+            </div>
+            
+            <div class="social-login">
+                <button class="btn btn-outline-secondary"><i class="bi bi-google"></i> Google</button>
+                <button class="btn btn-outline-secondary"><i class="bi bi-facebook"></i> Facebook</button>
+            </div>
+            
+            <p class="auth-footer">
+                Already have an account? <a th:href="@{/login}">Sign in</a>
+            </p>
+        </div>
+    </div>
+    
+    <th:block th:replace="~{fragments/footer :: scripts}"></th:block>
+    
+    <script>
+        document.getElementById('registerForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            
+            if (password !== confirmPassword) {
+                document.getElementById('errorAlert').style.display = 'block';
+                document.getElementById('errorAlert').textContent = 'Passwords do not match';
+                return;
+            }
+            
+            const formData = {
+                name: document.getElementById('name').value,
+                email: document.getElementById('email').value,
+                phone: document.getElementById('phone').value,
+                password: password
+            };
+            
+            try {
+                const response = await fetch('/api/auth/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('user', JSON.stringify(data.user));
+                    window.location.href = '/';
+                } else {
+                    const error = await response.json();
+                    document.getElementById('errorAlert').style.display = 'block';
+                    document.getElementById('errorAlert').textContent = error.message || 'Registration failed';
+                }
+            } catch (error) {
+                document.getElementById('errorAlert').style.display = 'block';
+                document.getElementById('errorAlert').textContent = 'An error occurred. Please try again.';
+            }
+        });
+    </script>
+</body>
+</html>
+

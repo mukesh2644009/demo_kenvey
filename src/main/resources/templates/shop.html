@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/header :: head}"></head>
+<body>
+    <nav th:replace="~{fragments/header :: navbar}"></nav>
+    
+    <!-- Page Header -->
+    <section class="page-header">
+        <div class="container">
+            <h1>Shop</h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a th:href="@{/}">Home</a></li>
+                    <li class="breadcrumb-item active">Shop</li>
+                </ol>
+            </nav>
+        </div>
+    </section>
+    
+    <!-- Shop Content -->
+    <section class="shop-section">
+        <div class="container">
+            <div class="row">
+                <!-- Sidebar Filters -->
+                <div class="col-lg-3">
+                    <div class="shop-sidebar">
+                        <div class="filter-section">
+                            <h5>Categories</h5>
+                            <ul class="filter-list">
+                                <li th:each="category : ${categories}">
+                                    <a th:href="@{/shop(category=${category.id})}" 
+                                       th:classappend="${currentCategory != null and currentCategory == category.id} ? 'active' : ''"
+                                       th:text="${category.name}">Category</a>
+                                </li>
+                            </ul>
+                        </div>
+                        
+                        <div class="filter-section">
+                            <h5>Brands</h5>
+                            <ul class="filter-list">
+                                <li th:each="brand : ${brands}">
+                                    <a th:href="@{/shop(brand=${brand})}"
+                                       th:classappend="${currentBrand != null and currentBrand == brand} ? 'active' : ''"
+                                       th:text="${brand}">Brand</a>
+                                </li>
+                            </ul>
+                        </div>
+                        
+                        <div class="filter-section">
+                            <h5>Colors</h5>
+                            <div class="color-filters">
+                                <a th:each="color : ${colors}" 
+                                   th:href="@{/shop(color=${color})}"
+                                   th:classappend="${currentColor != null and currentColor == color} ? 'active' : ''"
+                                   th:style="'background-color:' + ${color}"
+                                   th:title="${color}" class="color-filter"></a>
+                            </div>
+                        </div>
+                        
+                        <div class="filter-section">
+                            <h5>Price Range</h5>
+                            <form th:action="@{/shop}" method="get" class="price-filter-form">
+                                <div class="row g-2">
+                                    <div class="col-6">
+                                        <input type="number" name="minPrice" class="form-control" placeholder="Min" 
+                                               th:value="${currentMinPrice}">
+                                    </div>
+                                    <div class="col-6">
+                                        <input type="number" name="maxPrice" class="form-control" placeholder="Max"
+                                               th:value="${currentMaxPrice}">
+                                    </div>
+                                    <div class="col-12">
+                                        <button type="submit" class="btn btn-outline-accent w-100">Apply</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                        
+                        <div class="filter-section">
+                            <a th:href="@{/shop}" class="btn btn-outline-secondary w-100">Clear All Filters</a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Products Grid -->
+                <div class="col-lg-9">
+                    <div class="shop-header">
+                        <div class="results-count">
+                            <span th:text="'Showing ' + ${products.numberOfElements} + ' of ' + ${products.totalElements} + ' products'">Showing products</span>
+                        </div>
+                        <div class="shop-sort">
+                            <select class="form-select" onchange="sortProducts(this.value)">
+                                <option value="createdAt-desc" th:selected="${currentSort == 'createdAt' and currentSortDir == 'desc'}">Newest First</option>
+                                <option value="price-asc" th:selected="${currentSort == 'price' and currentSortDir == 'asc'}">Price: Low to High</option>
+                                <option value="price-desc" th:selected="${currentSort == 'price' and currentSortDir == 'desc'}">Price: High to Low</option>
+                                <option value="name-asc" th:selected="${currentSort == 'name' and currentSortDir == 'asc'}">Name: A-Z</option>
+                                <option value="rating-desc" th:selected="${currentSort == 'rating' and currentSortDir == 'desc'}">Top Rated</option>
+                                <option value="soldCount-desc" th:selected="${currentSort == 'soldCount' and currentSortDir == 'desc'}">Best Selling</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="row g-4" th:if="${products.totalElements > 0}">
+                        <div class="col-lg-4 col-md-4 col-6" th:each="product : ${products.content}">
+                            <div class="product-card">
+                                <div class="product-image">
+                                    <img th:src="${product.imageUrl} ?: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400'" 
+                                         th:alt="${product.name}">
+                                    <div class="product-badges">
+                                        <span class="badge badge-featured" th:if="${product.featured}">Featured</span>
+                                        <span class="badge badge-sale" th:if="${product.originalPrice != null and product.originalPrice > product.price}">Sale</span>
+                                        <span class="badge badge-outofstock" th:if="${product.stockQuantity <= 0}">Out of Stock</span>
+                                    </div>
+                                    <div class="product-actions">
+                                        <a th:href="@{/product/{id}(id=${product.id})}" class="btn-action" title="View Details">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <a th:href="|https://wa.me/919876543210?text=Hi, I am interested in ${product.name} (₹${product.price})|" target="_blank" class="btn-action btn-whatsapp-small" title="Enquire on WhatsApp">
+                                            <i class="bi bi-whatsapp"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                                <div class="product-info">
+                                    <span class="product-brand" th:text="${product.brand}">Brand</span>
+                                    <h5 class="product-name">
+                                        <a th:href="@{/product/{id}(id=${product.id})}" th:text="${product.name}">Product Name</a>
+                                    </h5>
+                                    <div class="product-rating">
+                                        <i class="bi bi-star-fill"></i>
+                                        <span th:text="${#numbers.formatDecimal(product.rating, 1, 1)}">4.5</span>
+                                        <span class="review-count" th:text="'(' + ${product.reviewCount} + ')'"></span>
+                                    </div>
+                                    <div class="product-price">
+                                        <span class="current-price" th:text="'₹' + ${#numbers.formatDecimal(product.price, 1, 0)}">₹999</span>
+                                        <span class="original-price" th:if="${product.originalPrice != null and product.originalPrice > product.price}" 
+                                              th:text="'₹' + ${#numbers.formatDecimal(product.originalPrice, 1, 0)}">₹1299</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="no-products" th:if="${products.totalElements == 0}">
+                        <i class="bi bi-inbox"></i>
+                        <h4>No products found</h4>
+                        <p>Try adjusting your filters or search terms</p>
+                        <a th:href="@{/shop}" class="btn btn-accent">Clear Filters</a>
+                    </div>
+                    
+                    <!-- Pagination -->
+                    <nav th:if="${products.totalPages > 1}" class="shop-pagination">
+                        <ul class="pagination justify-content-center">
+                            <li class="page-item" th:classappend="${products.first} ? 'disabled'">
+                                <a class="page-link" th:href="@{/shop(page=${products.number - 1})}">&laquo;</a>
+                            </li>
+                            <li class="page-item" th:each="pageNum : ${#numbers.sequence(0, products.totalPages - 1)}"
+                                th:classappend="${pageNum == products.number} ? 'active'">
+                                <a class="page-link" th:href="@{/shop(page=${pageNum})}" th:text="${pageNum + 1}">1</a>
+                            </li>
+                            <li class="page-item" th:classappend="${products.last} ? 'disabled'">
+                                <a class="page-link" th:href="@{/shop(page=${products.number + 1})}">&raquo;</a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <footer th:replace="~{fragments/footer :: footer}"></footer>
+    
+    <!-- Floating WhatsApp Button -->
+    <a href="https://wa.me/919876543210" target="_blank" class="whatsapp-float" title="Chat with us on WhatsApp">
+        <i class="bi bi-whatsapp"></i>
+    </a>
+    
+    <th:block th:replace="~{fragments/footer :: scripts}"></th:block>
+    
+    <script>
+        function sortProducts(value) {
+            const [sortBy, sortDir] = value.split('-');
+            const url = new URL(window.location.href);
+            url.searchParams.set('sortBy', sortBy);
+            url.searchParams.set('sortDir', sortDir);
+            window.location.href = url.toString();
+        }
+    </script>
+</body>
+</html>
+

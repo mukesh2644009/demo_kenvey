@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Dashboard - Kenway Industries</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <link th:href="@{/css/dashboard.css}" href="/css/dashboard.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Sidebar -->
+    <nav class="sidebar">
+        <div class="sidebar-header">
+            <img th:src="@{/images/kenway-logo.svg}" alt="Kenway Logo" class="sidebar-logo">
+            <span class="sidebar-brand">Kenway Industries</span>
+        </div>
+        <ul class="sidebar-nav">
+            <li class="nav-item active">
+                <a href="/dashboard" class="nav-link">
+                    <i class="bi bi-speedometer2"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/dashboard/customers" class="nav-link">
+                    <i class="bi bi-people"></i>
+                    <span>Customers</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/admin/orders" class="nav-link">
+                    <i class="bi bi-box"></i>
+                    <span>Orders</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/admin/warranties" class="nav-link">
+                    <i class="bi bi-shield-check"></i>
+                    <span>Warranties</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/admin/products" class="nav-link">
+                    <i class="bi bi-grid"></i>
+                    <span>Products</span>
+                </a>
+            </li>
+        </ul>
+        <div class="sidebar-footer">
+            <a href="/" class="nav-link">
+                <i class="bi bi-house"></i>
+                <span>Back to Store</span>
+            </a>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="page-header">
+            <h1>Dashboard Overview</h1>
+            <div class="header-actions">
+                <span class="text-muted" th:text="${#temporals.format(#temporals.createNow(), 'EEEE, MMMM d, yyyy')}">Today's Date</span>
+            </div>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon customers">
+                    <i class="bi bi-people-fill"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 th:text="${analytics.totalCustomers}">0</h3>
+                    <p>Total Customers</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon orders">
+                    <i class="bi bi-box-fill"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 th:text="${analytics.totalOrders}">0</h3>
+                    <p>Total Orders</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon revenue">
+                    <i class="bi bi-currency-rupee"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 th:text="'₹' + ${#numbers.formatDecimal(analytics.totalRevenue, 1, 0)}">₹0</h3>
+                    <p>Total Revenue</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon warranty-active">
+                    <i class="bi bi-shield-fill-check"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 th:text="${analytics.activeWarranties}">0</h3>
+                    <p>Active Warranties</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Warranty Alerts -->
+        <div class="warranty-alert-section" th:if="${analytics.expiringWarranties > 0}">
+            <div class="alert alert-warning d-flex align-items-center">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                <span><strong th:text="${analytics.expiringWarranties}">0</strong> warranties expiring within 30 days</span>
+                <a href="#warranty-alerts" class="ms-auto btn btn-sm btn-outline-warning">View Details</a>
+            </div>
+        </div>
+
+        <!-- Main Grid -->
+        <div class="dashboard-grid">
+            <!-- Top Customers by Purchases -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h5><i class="bi bi-trophy-fill text-warning me-2"></i>Top Customers by Purchases</h5>
+                    <a href="/dashboard/customers" class="btn btn-sm btn-outline-primary">View All</a>
+                </div>
+                <div class="card-body">
+                    <div class="top-customer-list">
+                        <div class="top-customer-item" th:each="customer : ${analytics.topCustomersByPurchases}">
+                            <div class="customer-rank" th:text="${customer.rank}">#1</div>
+                            <div class="customer-info">
+                                <strong th:text="${customer.name}">Customer Name</strong>
+                                <small th:text="${customer.email}">email@example.com</small>
+                            </div>
+                            <div class="customer-stats">
+                                <span class="badge bg-primary" th:text="${customer.totalPurchases} + ' orders'">0 orders</span>
+                            </div>
+                        </div>
+                        <div class="text-muted text-center py-3" th:if="${#lists.isEmpty(analytics.topCustomersByPurchases)}">
+                            No customer data available
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Top Customers by Spend -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h5><i class="bi bi-cash-stack text-success me-2"></i>Top Customers by Spend</h5>
+                    <a href="/dashboard/customers" class="btn btn-sm btn-outline-primary">View All</a>
+                </div>
+                <div class="card-body">
+                    <div class="top-customer-list">
+                        <div class="top-customer-item" th:each="customer : ${analytics.topCustomersBySpend}">
+                            <div class="customer-rank" th:text="${customer.rank}">#1</div>
+                            <div class="customer-info">
+                                <strong th:text="${customer.name}">Customer Name</strong>
+                                <small th:text="${customer.email}">email@example.com</small>
+                            </div>
+                            <div class="customer-stats">
+                                <span class="badge bg-success" th:text="'₹' + ${#numbers.formatDecimal(customer.totalSpent, 1, 0)}">₹0</span>
+                            </div>
+                        </div>
+                        <div class="text-muted text-center py-3" th:if="${#lists.isEmpty(analytics.topCustomersBySpend)}">
+                            No customer data available
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Orders -->
+            <div class="dashboard-card wide">
+                <div class="card-header">
+                    <h5><i class="bi bi-clock-history text-info me-2"></i>Recent Orders</h5>
+                    <a href="/admin/orders" class="btn btn-sm btn-outline-primary">View All</a>
+                </div>
+                <div class="card-body">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Order #</th>
+                                <th>Customer</th>
+                                <th>Date</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="order : ${analytics.recentOrders}">
+                                <td th:text="${order.orderNumber}">ORD-001</td>
+                                <td>
+                                    <strong th:text="${order.customerName}">Customer Name</strong>
+                                    <br><small class="text-muted" th:text="${order.customerEmail}">email</small>
+                                </td>
+                                <td th:text="${order.orderDate}">Jan 1, 2024</td>
+                                <td th:text="'₹' + ${#numbers.formatDecimal(order.totalAmount, 1, 2)}">₹0.00</td>
+                                <td>
+                                    <span class="badge" 
+                                          th:classappend="${order.status == 'DELIVERED'} ? 'bg-success' : 
+                                                        (${order.status == 'PENDING'} ? 'bg-warning' : 
+                                                        (${order.status == 'CANCELLED'} ? 'bg-danger' : 'bg-info'))"
+                                          th:text="${order.status}">Status</span>
+                                </td>
+                                <td>
+                                    <a th:href="@{'/admin/orders/' + ${order.orderId}}" class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="text-muted text-center py-3" th:if="${#lists.isEmpty(analytics.recentOrders)}">
+                        No recent orders
+                    </div>
+                </div>
+            </div>
+
+            <!-- Warranty Alerts -->
+            <div class="dashboard-card wide" id="warranty-alerts">
+                <div class="card-header">
+                    <h5><i class="bi bi-exclamation-circle text-danger me-2"></i>Warranty Alerts</h5>
+                    <a href="/admin/warranties" class="btn btn-sm btn-outline-primary">Manage Warranties</a>
+                </div>
+                <div class="card-body">
+                    <table class="table table-hover" th:if="${!#lists.isEmpty(analytics.warrantyAlerts)}">
+                        <thead>
+                            <tr>
+                                <th>Warranty #</th>
+                                <th>Customer</th>
+                                <th>Product</th>
+                                <th>Expiry Date</th>
+                                <th>Days Left</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="alert : ${analytics.warrantyAlerts}">
+                                <td th:text="${alert.warrantyNumber}">WRN-001</td>
+                                <td th:text="${alert.customerName}">Customer Name</td>
+                                <td th:text="${alert.productName}">Product Name</td>
+                                <td th:text="${alert.expiryDate}">Jan 1, 2024</td>
+                                <td>
+                                    <span class="badge" 
+                                          th:classappend="${alert.daysRemaining <= 7} ? 'bg-danger' : 'bg-warning'"
+                                          th:text="${alert.daysRemaining} + ' days'">0 days</span>
+                                </td>
+                                <td>
+                                    <span class="warranty-status expiring">
+                                        <i class="bi bi-clock"></i> Expiring Soon
+                                    </span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="text-muted text-center py-3" th:if="${#lists.isEmpty(analytics.warrantyAlerts)}">
+                        <i class="bi bi-check-circle text-success"></i> No warranty alerts - all warranties are in good standing
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+

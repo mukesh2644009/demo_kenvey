@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/header :: head}"></head>
+<body>
+    <nav th:replace="~{fragments/header :: navbar}"></nav>
+    
+    <!-- Page Header -->
+    <section class="page-header">
+        <div class="container">
+            <h1>Track Your Order</h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a th:href="@{/}">Home</a></li>
+                    <li class="breadcrumb-item active">Track Order</li>
+                </ol>
+            </nav>
+        </div>
+    </section>
+    
+    <!-- Track Order Content -->
+    <section class="track-section py-5">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <!-- Search Form -->
+                    <div class="track-search-card">
+                        <h4>Enter Your Order Number</h4>
+                        <form id="trackForm" class="track-form">
+                            <div class="input-group input-group-lg">
+                                <input type="text" class="form-control" id="orderNumber" placeholder="e.g., ORD-20240107-ABC12345" required>
+                                <button class="btn btn-accent" type="submit">
+                                    <i class="bi bi-search me-2"></i>Track
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                    
+                    <!-- Order Details (Hidden by default) -->
+                    <div class="order-tracking-card" id="orderDetails" style="display: none;">
+                        <div class="order-tracking-header">
+                            <div>
+                                <h5 id="displayOrderNumber">Order #</h5>
+                                <p id="orderDate">Placed on</p>
+                            </div>
+                            <span class="order-status" id="orderStatus">Status</span>
+                        </div>
+                        
+                        <div class="tracking-timeline">
+                            <div class="timeline-item" id="step-pending">
+                                <div class="timeline-dot"></div>
+                                <div class="timeline-content">
+                                    <h6>Order Placed</h6>
+                                    <p>We have received your order</p>
+                                </div>
+                            </div>
+                            <div class="timeline-item" id="step-confirmed">
+                                <div class="timeline-dot"></div>
+                                <div class="timeline-content">
+                                    <h6>Order Confirmed</h6>
+                                    <p>Your order has been confirmed</p>
+                                </div>
+                            </div>
+                            <div class="timeline-item" id="step-processing">
+                                <div class="timeline-dot"></div>
+                                <div class="timeline-content">
+                                    <h6>Processing</h6>
+                                    <p>Your order is being prepared</p>
+                                </div>
+                            </div>
+                            <div class="timeline-item" id="step-shipped">
+                                <div class="timeline-dot"></div>
+                                <div class="timeline-content">
+                                    <h6>Shipped</h6>
+                                    <p id="trackingInfo">Your order is on the way</p>
+                                </div>
+                            </div>
+                            <div class="timeline-item" id="step-delivered">
+                                <div class="timeline-dot"></div>
+                                <div class="timeline-content">
+                                    <h6>Delivered</h6>
+                                    <p id="deliveryInfo">Package delivered</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="shipping-info" id="shippingInfo">
+                            <h6><i class="bi bi-geo-alt me-2"></i>Shipping Address</h6>
+                            <p id="shippingAddress"></p>
+                        </div>
+                    </div>
+                    
+                    <!-- Error Message -->
+                    <div class="alert alert-danger" id="errorMessage" style="display: none;"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <footer th:replace="~{fragments/footer :: footer}"></footer>
+    <th:block th:replace="~{fragments/footer :: scripts}"></th:block>
+    
+    <style>
+        .track-search-card {
+            background: #fff;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            margin-bottom: 2rem;
+        }
+        .track-search-card h4 { margin-bottom: 1.5rem; }
+        .order-tracking-card {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            overflow: hidden;
+        }
+        .order-tracking-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem;
+            background: #f8fafc;
+        }
+        .order-tracking-header h5 { margin: 0; }
+        .order-tracking-header p { margin: 0; color: #64748b; }
+        .order-status {
+            padding: 0.5rem 1.25rem;
+            border-radius: 25px;
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+        .tracking-timeline {
+            padding: 2rem;
+            position: relative;
+        }
+        .timeline-item {
+            display: flex;
+            gap: 1.5rem;
+            padding-bottom: 2rem;
+            position: relative;
+        }
+        .timeline-item:last-child { padding-bottom: 0; }
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: 11px;
+            top: 24px;
+            bottom: 0;
+            width: 2px;
+            background: #e5e7eb;
+        }
+        .timeline-item:last-child::before { display: none; }
+        .timeline-dot {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #e5e7eb;
+            flex-shrink: 0;
+            position: relative;
+            z-index: 1;
+        }
+        .timeline-item.completed .timeline-dot {
+            background: #10b981;
+        }
+        .timeline-item.completed .timeline-dot::after {
+            content: '✓';
+            color: #fff;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+        }
+        .timeline-item.active .timeline-dot {
+            background: #e94560;
+            animation: pulse 2s infinite;
+        }
+        .timeline-item.completed::before { background: #10b981; }
+        .timeline-content h6 { margin: 0 0 0.25rem; }
+        .timeline-content p { margin: 0; color: #64748b; font-size: 0.9rem; }
+        .shipping-info {
+            padding: 1.5rem;
+            border-top: 1px solid #f1f5f9;
+        }
+        .shipping-info h6 { margin-bottom: 0.75rem; }
+        .shipping-info p { margin: 0; color: #64748b; }
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(233, 69, 96, 0.4); }
+            50% { box-shadow: 0 0 0 10px rgba(233, 69, 96, 0); }
+        }
+    </style>
+    
+    <script>
+        const statusOrder = ['PENDING', 'CONFIRMED', 'PROCESSING', 'SHIPPED', 'DELIVERED'];
+        const statusColors = {
+            'PENDING': { bg: 'rgba(245, 158, 11, 0.1)', color: '#f59e0b' },
+            'CONFIRMED': { bg: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6' },
+            'PROCESSING': { bg: 'rgba(99, 102, 241, 0.1)', color: '#6366f1' },
+            'SHIPPED': { bg: 'rgba(99, 102, 241, 0.15)', color: '#6366f1' },
+            'OUT_FOR_DELIVERY': { bg: 'rgba(16, 185, 129, 0.1)', color: '#10b981' },
+            'DELIVERED': { bg: 'rgba(16, 185, 129, 0.15)', color: '#10b981' },
+            'CANCELLED': { bg: 'rgba(239, 68, 68, 0.1)', color: '#ef4444' }
+        };
+        
+        // Check for order parameter in URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const orderParam = urlParams.get('order');
+        if (orderParam) {
+            document.getElementById('orderNumber').value = orderParam;
+            trackOrder(orderParam);
+        }
+        
+        document.getElementById('trackForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const orderNumber = document.getElementById('orderNumber').value;
+            trackOrder(orderNumber);
+        });
+        
+        async function trackOrder(orderNumber) {
+            try {
+                const response = await fetch(`/api/orders/track/${orderNumber}`);
+                
+                if (response.ok) {
+                    const order = await response.json();
+                    displayOrder(order);
+                } else {
+                    document.getElementById('orderDetails').style.display = 'none';
+                    document.getElementById('errorMessage').style.display = 'block';
+                    document.getElementById('errorMessage').textContent = 'Order not found. Please check the order number and try again.';
+                }
+            } catch (error) {
+                document.getElementById('errorMessage').style.display = 'block';
+                document.getElementById('errorMessage').textContent = 'An error occurred. Please try again.';
+            }
+        }
+        
+        function displayOrder(order) {
+            document.getElementById('errorMessage').style.display = 'none';
+            document.getElementById('orderDetails').style.display = 'block';
+            
+            document.getElementById('displayOrderNumber').textContent = 'Order #' + order.orderNumber;
+            document.getElementById('orderDate').textContent = 'Placed on ' + new Date(order.createdAt).toLocaleDateString('en-US', {
+                year: 'numeric', month: 'long', day: 'numeric'
+            });
+            
+            const statusEl = document.getElementById('orderStatus');
+            statusEl.textContent = order.status.replace('_', ' ');
+            statusEl.style.background = statusColors[order.status]?.bg || '#e5e7eb';
+            statusEl.style.color = statusColors[order.status]?.color || '#64748b';
+            
+            // Update timeline
+            const currentIndex = statusOrder.indexOf(order.status);
+            statusOrder.forEach((status, index) => {
+                const step = document.getElementById('step-' + status.toLowerCase());
+                if (step) {
+                    step.classList.remove('completed', 'active');
+                    if (index < currentIndex) {
+                        step.classList.add('completed');
+                    } else if (index === currentIndex) {
+                        step.classList.add('completed', 'active');
+                    }
+                }
+            });
+            
+            // Tracking info
+            if (order.trackingNumber) {
+                document.getElementById('trackingInfo').innerHTML = `
+                    Carrier: ${order.carrier || 'N/A'}<br>
+                    Tracking: ${order.trackingNumber}
+                    ${order.estimatedDelivery ? '<br>Expected: ' + new Date(order.estimatedDelivery).toLocaleDateString() : ''}
+                `;
+            }
+            
+            // Delivery info
+            if (order.actualDelivery) {
+                document.getElementById('deliveryInfo').textContent = 
+                    'Delivered on ' + new Date(order.actualDelivery).toLocaleDateString('en-US', {
+                        year: 'numeric', month: 'long', day: 'numeric'
+                    });
+            }
+            
+            // Shipping address
+            document.getElementById('shippingAddress').innerHTML = `
+                ${order.shippingName}<br>
+                ${order.shippingAddress}<br>
+                ${order.shippingCity}, ${order.shippingState} ${order.shippingZipCode}<br>
+                ${order.shippingCountry}
+            `;
+        }
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${customer.name} + ' - Customer Dashboard'">Customer Details</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <link th:href="@{/css/dashboard.css}" href="/css/dashboard.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Sidebar -->
+    <nav class="sidebar">
+        <div class="sidebar-header">
+            <img th:src="@{/images/kenway-logo.svg}" alt="Kenway Logo" class="sidebar-logo">
+            <span class="sidebar-brand">Kenway Industries</span>
+        </div>
+        <ul class="sidebar-nav">
+            <li class="nav-item">
+                <a href="/dashboard" class="nav-link">
+                    <i class="bi bi-speedometer2"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+            <li class="nav-item active">
+                <a href="/dashboard/customers" class="nav-link">
+                    <i class="bi bi-people"></i>
+                    <span>Customers</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/admin/orders" class="nav-link">
+                    <i class="bi bi-box"></i>
+                    <span>Orders</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/admin/warranties" class="nav-link">
+                    <i class="bi bi-shield-check"></i>
+                    <span>Warranties</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/admin/products" class="nav-link">
+                    <i class="bi bi-grid"></i>
+                    <span>Products</span>
+                </a>
+            </li>
+        </ul>
+        <div class="sidebar-footer">
+            <a href="/" class="nav-link">
+                <i class="bi bi-house"></i>
+                <span>Back to Store</span>
+            </a>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Breadcrumb -->
+        <nav aria-label="breadcrumb" class="mb-3">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/dashboard">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="/dashboard/customers">Customers</a></li>
+                <li class="breadcrumb-item active" th:text="${customer.name}">Customer Name</li>
+            </ol>
+        </nav>
+
+        <!-- Customer Header -->
+        <div class="customer-header-section">
+            <div class="customer-header-info">
+                <div class="customer-avatar-large">
+                    <span th:text="${#strings.substring(customer.name, 0, 1)}">J</span>
+                </div>
+                <div class="customer-header-details">
+                    <h1 th:text="${customer.name}">Customer Name</h1>
+                    <p class="customer-number" th:text="${customer.customerNumber}">CUST-000001</p>
+                    <div class="customer-contact">
+                        <span><i class="bi bi-envelope"></i> <span th:text="${customer.email}">email@example.com</span></span>
+                        <span th:if="${customer.phone}"><i class="bi bi-telephone"></i> <span th:text="${customer.phone}">+91 9876543210</span></span>
+                    </div>
+                    <div class="customer-status">
+                        <span class="badge" th:classappend="${customer.active} ? 'bg-success' : 'bg-secondary'"
+                              th:text="${customer.active} ? 'Active' : 'Inactive'">Active</span>
+                        <span class="text-muted" th:if="${customer.memberSince}">
+                            Member since <span th:text="${#temporals.format(customer.memberSince, 'MMMM yyyy')}">January 2024</span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div class="customer-header-actions">
+                <a th:href="@{'/dashboard/customers/' + ${customer.customerId} + '/export/csv'}" class="btn btn-outline-primary">
+                    <i class="bi bi-download me-1"></i> Export Data
+                </a>
+            </div>
+        </div>
+
+        <!-- Customer Stats -->
+        <div class="stats-grid customer-stats">
+            <div class="stat-card">
+                <div class="stat-icon orders">
+                    <i class="bi bi-box-fill"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 th:text="${customer.totalOrders}">0</h3>
+                    <p>Total Orders</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon revenue">
+                    <i class="bi bi-currency-rupee"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 th:text="'₹' + ${#numbers.formatDecimal(customer.totalSpent, 1, 0)}">₹0</h3>
+                    <p>Total Spent</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon avg">
+                    <i class="bi bi-graph-up"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 th:text="'₹' + ${#numbers.formatDecimal(customer.averageOrderValue, 1, 0)}">₹0</h3>
+                    <p>Avg Order Value</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon warranty-active">
+                    <i class="bi bi-shield-fill-check"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 th:text="${#lists.size(customer.warranties)}">0</h3>
+                    <p>Warranties</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Customer Address -->
+        <div class="detail-section" th:if="${customer.address}">
+            <h5><i class="bi bi-geo-alt me-2"></i>Address</h5>
+            <div class="address-card">
+                <p th:text="${customer.address}">Address Line</p>
+                <p>
+                    <span th:text="${customer.city}">City</span><span th:if="${customer.state}">, <span th:text="${customer.state}">State</span></span>
+                    <span th:if="${customer.zipCode}"> - <span th:text="${customer.zipCode}">Zip</span></span>
+                </p>
+                <p th:if="${customer.country}" th:text="${customer.country}">Country</p>
+            </div>
+        </div>
+
+        <!-- Warranty Status Section -->
+        <div class="detail-section">
+            <h5><i class="bi bi-shield-check me-2"></i>Warranty Status</h5>
+            
+            <div class="warranty-grid" th:if="${!#lists.isEmpty(customer.warranties)}">
+                <div class="warranty-card" th:each="warranty : ${customer.warranties}"
+                     th:classappend="${warranty.status == 'ACTIVE'} ? 'warranty-active' : 
+                                    (${warranty.status == 'EXPIRING_SOON'} ? 'warranty-expiring' : 'warranty-expired')">
+                    <div class="warranty-status-indicator">
+                        <span class="status-dot" th:classappend="${warranty.status == 'ACTIVE'} ? 'active' : 
+                                                               (${warranty.status == 'EXPIRING_SOON'} ? 'expiring' : 'expired')"></span>
+                        <span class="status-text" th:text="${warranty.status}">ACTIVE</span>
+                    </div>
+                    <div class="warranty-product">
+                        <h6 th:text="${warranty.productName}">Product Name</h6>
+                        <small class="text-muted" th:text="'SKU: ' + ${warranty.productSku}">SKU: PRD-001</small>
+                    </div>
+                    <div class="warranty-info">
+                        <div class="warranty-number">
+                            <i class="bi bi-hash"></i>
+                            <span th:text="${warranty.warrantyNumber}">WRN-001</span>
+                        </div>
+                        <div class="warranty-dates">
+                            <div class="date-item">
+                                <span class="label">Start Date</span>
+                                <span class="value" th:text="${#temporals.format(warranty.warrantyStartDate, 'MMM dd, yyyy')}">Jan 01, 2024</span>
+                            </div>
+                            <div class="date-item">
+                                <span class="label">End Date</span>
+                                <span class="value" th:text="${#temporals.format(warranty.warrantyEndDate, 'MMM dd, yyyy')}">Jan 01, 2025</span>
+                            </div>
+                        </div>
+                        <div class="warranty-remaining" th:if="${warranty.isActive}">
+                            <span class="badge" th:classappend="${warranty.daysRemaining <= 30} ? 'bg-warning' : 'bg-success'"
+                                  th:text="${warranty.daysRemaining} + ' days remaining'">365 days remaining</span>
+                        </div>
+                        <div class="warranty-remaining" th:if="${!warranty.isActive}">
+                            <span class="badge bg-danger">Warranty Expired</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="no-data-message" th:if="${#lists.isEmpty(customer.warranties)}">
+                <i class="bi bi-shield"></i>
+                <p>No warranties registered for this customer</p>
+            </div>
+        </div>
+
+        <!-- Purchase History Section -->
+        <div class="detail-section">
+            <h5><i class="bi bi-bag-check me-2"></i>Purchase History</h5>
+            
+            <div class="purchase-history" th:if="${!#lists.isEmpty(customer.purchaseHistory)}">
+                <div class="order-card" th:each="order : ${customer.purchaseHistory}">
+                    <div class="order-header">
+                        <div class="order-info">
+                            <h6 th:text="${order.orderNumber}">ORD-001</h6>
+                            <span class="order-date" th:text="${#temporals.format(order.purchaseDateTime, 'MMM dd, yyyy HH:mm')}">Jan 01, 2024 10:30</span>
+                        </div>
+                        <div class="order-badges">
+                            <span class="badge" 
+                                  th:classappend="${order.status == 'DELIVERED'} ? 'bg-success' : 
+                                                (${order.status == 'PENDING'} ? 'bg-warning' : 
+                                                (${order.status == 'CANCELLED'} ? 'bg-danger' : 'bg-info'))"
+                                  th:text="${order.status}">Status</span>
+                            <span class="badge" 
+                                  th:classappend="${order.paymentStatus == 'PAID'} ? 'bg-success' : 
+                                                (${order.paymentStatus == 'PENDING'} ? 'bg-warning' : 'bg-secondary')"
+                                  th:text="${order.paymentStatus}">Payment</span>
+                        </div>
+                    </div>
+                    
+                    <div class="order-items">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Product</th>
+                                    <th>SKU</th>
+                                    <th class="text-center">Qty</th>
+                                    <th class="text-end">Unit Price</th>
+                                    <th class="text-end">Total</th>
+                                    <th class="text-center">Warranty</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="item : ${order.items}">
+                                    <td th:text="${item.productName}">Product Name</td>
+                                    <td><code th:text="${item.productSku}">SKU-001</code></td>
+                                    <td class="text-center" th:text="${item.quantity}">1</td>
+                                    <td class="text-end" th:text="'₹' + ${#numbers.formatDecimal(item.unitPrice, 1, 2)}">₹0.00</td>
+                                    <td class="text-end" th:text="'₹' + ${#numbers.formatDecimal(item.totalPrice, 1, 2)}">₹0.00</td>
+                                    <td class="text-center">
+                                        <span th:if="${item.hasWarranty}" class="text-success"><i class="bi bi-shield-check"></i></span>
+                                        <span th:if="${!item.hasWarranty}" class="text-muted"><i class="bi bi-dash"></i></span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                            <tfoot>
+                                <tr class="table-light">
+                                    <td colspan="4" class="text-end"><strong>Order Total:</strong></td>
+                                    <td class="text-end"><strong th:text="'₹' + ${#numbers.formatDecimal(order.totalValue, 1, 2)}">₹0.00</strong></td>
+                                    <td></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="no-data-message" th:if="${#lists.isEmpty(customer.purchaseHistory)}">
+                <i class="bi bi-bag"></i>
+                <p>No purchase history available</p>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+

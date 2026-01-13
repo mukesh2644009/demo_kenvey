@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/header :: head}"></head>
+<body>
+    <nav th:replace="~{fragments/header :: navbar}"></nav>
+    
+    <!-- Page Header -->
+    <section class="page-header">
+        <div class="container">
+            <h1>Shopping Cart</h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a th:href="@{/}">Home</a></li>
+                    <li class="breadcrumb-item active">Cart</li>
+                </ol>
+            </nav>
+        </div>
+    </section>
+    
+    <!-- Cart Content -->
+    <section class="cart-section">
+        <div class="container">
+            <div class="row g-5">
+                <div class="col-lg-8">
+                    <div class="cart-items" id="cartItems">
+                        <!-- Cart items will be loaded dynamically -->
+                        <div class="loading-spinner">
+                            <div class="spinner-border text-accent" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="empty-cart" id="emptyCart" style="display: none;">
+                        <i class="bi bi-cart-x"></i>
+                        <h3>Your cart is empty</h3>
+                        <p>Looks like you haven't added any items to your cart yet.</p>
+                        <a th:href="@{/shop}" class="btn btn-accent btn-lg">Continue Shopping</a>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4">
+                    <div class="cart-summary" id="cartSummary">
+                        <h4>Order Summary</h4>
+                        <div class="summary-row">
+                            <span>Subtotal</span>
+                            <span id="subtotal">$0.00</span>
+                        </div>
+                        <div class="summary-row">
+                            <span>Shipping</span>
+                            <span id="shipping">Calculated at checkout</span>
+                        </div>
+                        <div class="discount-form">
+                            <div class="input-group">
+                                <input type="text" class="form-control" placeholder="Discount code" id="discountCode">
+                                <button class="btn btn-outline-accent" type="button" onclick="applyDiscount()">Apply</button>
+                            </div>
+                            <div class="discount-message" id="discountMessage"></div>
+                        </div>
+                        <div class="summary-row discount-row" id="discountRow" style="display: none;">
+                            <span>Discount</span>
+                            <span id="discountAmount">-$0.00</span>
+                        </div>
+                        <hr>
+                        <div class="summary-row total">
+                            <span>Total</span>
+                            <span id="total">$0.00</span>
+                        </div>
+                        <a th:href="@{/checkout}" class="btn btn-accent btn-lg w-100" id="checkoutBtn">
+                            Proceed to Checkout <i class="bi bi-arrow-right ms-2"></i>
+                        </a>
+                        <a th:href="@{/shop}" class="btn btn-outline-secondary w-100 mt-2">Continue Shopping</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <footer th:replace="~{fragments/footer :: footer}"></footer>
+    <th:block th:replace="~{fragments/footer :: scripts}"></th:block>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            loadCart();
+        });
+        
+        async function loadCart() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                showEmptyCart();
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/cart', {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                
+                if (response.ok) {
+                    const items = await response.json();
+                    if (items.length === 0) {
+                        showEmptyCart();
+                    } else {
+                        renderCart(items);
+                    }
+                } else {
+                    showEmptyCart();
+                }
+            } catch (error) {
+                console.error('Error loading cart:', error);
+                showEmptyCart();
+            }
+        }
+        
+        function showEmptyCart() {
+            document.getElementById('cartItems').style.display = 'none';
+            document.getElementById('emptyCart').style.display = 'block';
+            document.getElementById('checkoutBtn').classList.add('disabled');
+        }
+        
+        function renderCart(items) {
+            const container = document.getElementById('cartItems');
+            let subtotal = 0;
+            
+            let html = '<div class="cart-table">';
+            items.forEach(item => {
+                subtotal += item.totalPrice;
+                html += `
+                    <div class="cart-item">
+                        <div class="item-image">
+                            <img src="${item.productImage || 'https://via.placeholder.com/100'}" alt="${item.productName}">
+                        </div>
+                        <div class="item-details">
+                            <h5>${item.productName}</h5>
+                            <p class="item-meta">SKU: ${item.productSku}</p>
+                            ${item.productColor ? `<p class="item-meta">Color: ${item.productColor}</p>` : ''}
+                        </div>
+                        <div class="item-price">$${item.unitPrice.toFixed(2)}</div>
+                        <div class="item-quantity">
+                            <div class="quantity-selector small">
+                                <button type="button" onclick="updateQty(${item.productId}, ${item.quantity - 1})"><i class="bi bi-dash"></i></button>
+                                <input type="number" value="${item.quantity}" readonly>
+                                <button type="button" onclick="updateQty(${item.productId}, ${item.quantity + 1})"><i class="bi bi-plus"></i></button>
+                            </div>
+                        </div>
+                        <div class="item-total">$${item.totalPrice.toFixed(2)}</div>
+                        <button class="item-remove" onclick="removeItem(${item.productId})">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            
+            container.innerHTML = html;
+            document.getElementById('subtotal').textContent = '$' + subtotal.toFixed(2);
+            document.getElementById('total').textContent = '$' + subtotal.toFixed(2);
+            document.getElementById('shipping').textContent = subtotal >= 100 ? 'Free' : '$9.99';
+            
+            if (subtotal < 100) {
+                const total = subtotal + 9.99;
+                document.getElementById('total').textContent = '$' + total.toFixed(2);
+            }
+        }
+        
+        async function updateQty(productId, quantity) {
+            if (quantity < 1) {
+                removeItem(productId);
+                return;
+            }
+            
+            const token = localStorage.getItem('token');
+            try {
+                await fetch(`/api/cart/update?productId=${productId}&quantity=${quantity}`, {
+                    method: 'PUT',
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                loadCart();
+            } catch (error) {
+                console.error('Error updating cart:', error);
+            }
+        }
+        
+        async function removeItem(productId) {
+            const token = localStorage.getItem('token');
+            try {
+                await fetch(`/api/cart/remove/${productId}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                loadCart();
+                updateCartCount();
+            } catch (error) {
+                console.error('Error removing item:', error);
+            }
+        }
+        
+        async function applyDiscount() {
+            const code = document.getElementById('discountCode').value;
+            if (!code) return;
+            
+            const subtotal = parseFloat(document.getElementById('subtotal').textContent.replace('$', ''));
+            
+            try {
+                const response = await fetch(`/api/discounts/validate/${code}?orderTotal=${subtotal}`);
+                const result = await response.json();
+                
+                const msgElement = document.getElementById('discountMessage');
+                
+                if (result.valid) {
+                    msgElement.innerHTML = `<span class="text-success"><i class="bi bi-check-circle"></i> Discount applied!</span>`;
+                    document.getElementById('discountRow').style.display = 'flex';
+                    document.getElementById('discountAmount').textContent = '-$' + result.discountAmount.toFixed(2);
+                    document.getElementById('total').textContent = '$' + result.finalTotal.toFixed(2);
+                    localStorage.setItem('discountCode', code);
+                } else {
+                    msgElement.innerHTML = `<span class="text-danger"><i class="bi bi-x-circle"></i> ${result.message}</span>`;
+                }
+            } catch (error) {
+                console.error('Error applying discount:', error);
+            }
+        }
+    </script>
+</body>
+</html>
+

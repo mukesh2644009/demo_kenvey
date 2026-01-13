@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/header :: head}"></head>
+<body>
+    <nav th:replace="~{fragments/header :: navbar}"></nav>
+    
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="hero-overlay"></div>
+        <div class="container">
+            <div class="row align-items-center min-vh-75">
+                <div class="col-lg-6">
+                    <div class="hero-content">
+                        <span class="hero-badge">Kenway Industries</span>
+                        <h1 class="hero-title">The Quality Product</h1>
+                        <p class="hero-text">Experience excellence with our premium kitchen appliances and household essentials. Quality you can trust, products you can rely on.</p>
+                        <div class="hero-buttons">
+                            <a th:href="@{/shop}" class="btn btn-accent btn-lg">View Products <i class="bi bi-arrow-right ms-2"></i></a>
+                            <a href="https://wa.me/919876543210" target="_blank" class="btn btn-success btn-lg"><i class="bi bi-whatsapp me-2"></i>Contact Us</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6 d-none d-lg-block">
+                    <div class="hero-products">
+                        <div class="hero-product-grid">
+                            <div class="hero-product-item" th:onclick="|window.location.href='@{/shop}'|">
+                                <img th:src="@{/images/cooler.svg}" alt="Air Cooler">
+                                <span>Air Coolers</span>
+                            </div>
+                            <div class="hero-product-item" th:onclick="|window.location.href='@{/shop}'|">
+                                <img th:src="@{/images/chimney.svg}" alt="Kitchen Chimney">
+                                <span>Chimneys</span>
+                            </div>
+                            <div class="hero-product-item" th:onclick="|window.location.href='@{/shop}'|">
+                                <img th:src="@{/images/mixer.svg}" alt="Mixer Grinder">
+                                <span>Mixers</span>
+                            </div>
+                            <div class="hero-product-item" th:onclick="|window.location.href='@{/shop}'|">
+                                <img th:src="@{/images/fan.svg}" alt="Ceiling Fan">
+                                <span>Fans</span>
+                            </div>
+                            <div class="hero-product-item" th:onclick="|window.location.href='@{/shop}'|">
+                                <img th:src="@{/images/grinder.svg}" alt="Wet Grinder">
+                                <span>Wet Grinders</span>
+                            </div>
+                            <div class="hero-product-item" th:onclick="|window.location.href='@{/shop}'|">
+                                <img th:src="@{/images/bottle.svg}" alt="Water Bottles">
+                                <span>Bottles</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="hero-shapes">
+            <div class="shape shape-1"></div>
+            <div class="shape shape-2"></div>
+            <div class="shape shape-3"></div>
+        </div>
+        
+        <!-- Background Floating Product Images -->
+        <div class="hero-bg-images">
+            <img th:src="@{/images/cooler.svg}" alt="" class="bg-img bg-img-1">
+            <img th:src="@{/images/fan.svg}" alt="" class="bg-img bg-img-2">
+            <img th:src="@{/images/chimney.svg}" alt="" class="bg-img bg-img-3">
+            <img th:src="@{/images/mixer.svg}" alt="" class="bg-img bg-img-4">
+        </div>
+    </section>
+    
+    <!-- Contact Info Strip -->
+    <section class="features-strip">
+        <div class="container">
+            <div class="row text-center">
+                <div class="col-md-3 col-6">
+                    <div class="feature-item">
+                        <i class="bi bi-geo-alt-fill"></i>
+                        <span>Ajmer, Rajasthan</span>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6">
+                    <a href="https://wa.me/919876543210" target="_blank" class="feature-item feature-link">
+                        <i class="bi bi-whatsapp"></i>
+                        <span>WhatsApp Us</span>
+                    </a>
+                </div>
+                <div class="col-md-3 col-6">
+                    <a href="https://instagram.com/kenvey-xyz" target="_blank" class="feature-item feature-link">
+                        <i class="bi bi-instagram"></i>
+                        <span>@kenvey-xyz</span>
+                    </a>
+                </div>
+                <div class="col-md-3 col-6">
+                    <div class="feature-item">
+                        <i class="bi bi-shield-check"></i>
+                        <span>Quality Products</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Categories Section -->
+    <section class="categories-section" id="categories">
+        <div class="container">
+            <div class="section-header text-center">
+                <span class="section-subtitle">Browse By</span>
+                <h2 class="section-title">Shop Categories</h2>
+            </div>
+            <div class="row g-4">
+                <div class="col-lg-3 col-md-4 col-6" th:each="category : ${categories}">
+                    <a th:href="@{/shop(category=${category.id})}" class="category-card">
+                        <div class="category-image">
+                            <img th:src="${category.imageUrl} ?: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=400'" 
+                                 th:alt="${category.name}">
+                        </div>
+                        <div class="category-info">
+                            <h5 th:text="${category.name}">Category Name</h5>
+                            <span>Shop Now <i class="bi bi-arrow-right"></i></span>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Featured Products -->
+    <section class="products-section" id="featured">
+        <div class="container">
+            <div class="section-header text-center">
+                <span class="section-subtitle">Hand Picked</span>
+                <h2 class="section-title">Featured Products</h2>
+            </div>
+            <div class="row g-4">
+                <div class="col-lg-3 col-md-4 col-6" th:each="product : ${featuredProducts}">
+                    <div class="product-card">
+                        <div class="product-image">
+                            <img th:src="${product.imageUrl} ?: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400'" 
+                                 th:alt="${product.name}">
+                            <div class="product-badges">
+                                <span class="badge badge-featured" th:if="${product.featured}">Featured</span>
+                                <span class="badge badge-sale" th:if="${product.originalPrice != null and product.originalPrice > product.price}">Sale</span>
+                            </div>
+                            <div class="product-actions">
+                                <button class="btn-action" th:onclick="|addToCart(${product.id})|">
+                                    <i class="bi bi-cart-plus"></i>
+                                </button>
+                                <a th:href="@{/product/{id}(id=${product.id})}" class="btn-action">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="product-info">
+                            <span class="product-brand" th:text="${product.brand}">Brand</span>
+                            <h5 class="product-name">
+                                <a th:href="@{/product/{id}(id=${product.id})}" th:text="${product.name}">Product Name</a>
+                            </h5>
+                            <div class="product-rating">
+                                <i class="bi bi-star-fill"></i>
+                                <span th:text="${#numbers.formatDecimal(product.rating, 1, 1)}">4.5</span>
+                                <span class="review-count" th:text="'(' + ${product.reviewCount} + ')'"></span>
+                            </div>
+                            <div class="product-price">
+                                <span class="current-price" th:text="'₹' + ${#numbers.formatDecimal(product.price, 1, 0)}">₹999</span>
+                                <span class="original-price" th:if="${product.originalPrice != null and product.originalPrice > product.price}" 
+                                      th:text="'₹' + ${#numbers.formatDecimal(product.originalPrice, 1, 0)}">₹1299</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="text-center mt-5">
+                <a th:href="@{/shop}" class="btn btn-outline-accent btn-lg">View All Products <i class="bi bi-arrow-right ms-2"></i></a>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Best Sellers -->
+    <section class="products-section bestsellers-section">
+        <div class="container">
+            <div class="section-header text-center">
+                <span class="section-subtitle">Top Picks</span>
+                <h2 class="section-title">Best Sellers</h2>
+            </div>
+            <div class="row g-4">
+                <div class="col-lg-3 col-md-4 col-6" th:each="product : ${bestSellers}">
+                    <div class="product-card">
+                        <div class="product-image">
+                            <img th:src="${product.imageUrl} ?: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400'" 
+                                 th:alt="${product.name}">
+                            <div class="product-badges">
+                                <span class="badge badge-bestseller">Bestseller</span>
+                            </div>
+                            <div class="product-actions">
+                                <button class="btn-action" th:onclick="|addToCart(${product.id})|">
+                                    <i class="bi bi-cart-plus"></i>
+                                </button>
+                                <a th:href="@{/product/{id}(id=${product.id})}" class="btn-action">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="product-info">
+                            <span class="product-brand" th:text="${product.brand}">Brand</span>
+                            <h5 class="product-name">
+                                <a th:href="@{/product/{id}(id=${product.id})}" th:text="${product.name}">Product Name</a>
+                            </h5>
+                            <div class="product-rating">
+                                <i class="bi bi-star-fill"></i>
+                                <span th:text="${#numbers.formatDecimal(product.rating, 1, 1)}">4.5</span>
+                                <span class="review-count" th:text="'(' + ${product.reviewCount} + ')'"></span>
+                            </div>
+                            <div class="product-price">
+                                <span class="current-price" th:text="'₹' + ${#numbers.formatDecimal(product.price, 1, 0)}">₹999</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Contact CTA -->
+    <section class="newsletter-section" id="contact">
+        <div class="container">
+            <div class="newsletter-card">
+                <div class="row align-items-center">
+                    <div class="col-lg-6">
+                        <h3>Contact Kenway Industries</h3>
+                        <p class="mb-2"><i class="bi bi-geo-alt-fill me-2"></i>Ajmer, Rajasthan, India</p>
+                        <p>For enquiries, orders and bulk deals - reach out to us on WhatsApp or Instagram!</p>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="contact-buttons d-flex gap-3 justify-content-center justify-content-lg-end flex-wrap">
+                            <a href="https://wa.me/919876543210" target="_blank" class="btn btn-success btn-lg">
+                                <i class="bi bi-whatsapp me-2"></i>WhatsApp
+                            </a>
+                            <a href="https://instagram.com/kenvey-xyz" target="_blank" class="btn btn-instagram btn-lg">
+                                <i class="bi bi-instagram me-2"></i>@kenvey-xyz
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <footer th:replace="~{fragments/footer :: footer}"></footer>
+    
+    <!-- Floating WhatsApp Button -->
+    <a href="https://wa.me/919876543210" target="_blank" class="whatsapp-float" title="Chat with us on WhatsApp">
+        <i class="bi bi-whatsapp"></i>
+    </a>
+    
+    <th:block th:replace="~{fragments/footer :: scripts}"></th:block>
+</body>
+</html>
+
